@@ -1,4 +1,4 @@
-## Advanced Junit testing practice with Java
+## Advanced JUnit testing practice with Java
 
 Dưới đây là một bài tập kiểm thử nâng cao với JUnit, áp dụng cho một số thuật toán thông dụng với các cấu trúc điều khiển và kiểu dữ liệu phong phú. 
 

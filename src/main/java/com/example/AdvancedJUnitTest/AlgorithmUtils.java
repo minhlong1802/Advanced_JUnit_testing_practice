@@ -44,6 +44,9 @@ public class AlgorithmUtils {
     // 3. Dijkstra
     public static int[] dijkstra(int[][] graph, int source) {
         int n = graph.length;
+        if (source < 0 || source >= n) {
+            throw new IllegalArgumentException("Source index is out of bounds");
+        }
         int[] dist = new int[n];
         boolean[] visited = new boolean[n];
         Arrays.fill(dist, Integer.MAX_VALUE);
@@ -78,18 +81,40 @@ public class AlgorithmUtils {
 
     // 4. Kiểm tra chuỗi đối xứng
     public static boolean isPalindrome(String s) {
+        if (s == null) {
+            return false;
+        }
         int left = 0, right = s.length() - 1;
         while (left < right) {
-            if (s.charAt(left++) != s.charAt(right--)) return false;
+            if (s.charAt(left) != s.charAt(right)) {
+                return false;
+            }
+            left++;
+            right--;
         }
         return true;
     }
 
     // 5. Tìm tổ hợp k phần tử
-    public static List<List<Integer>> findCombinations(List<Integer> list, int k) {
+    public static List<List<Integer>> findCombinations(List<Integer> input, int k) {
+        if (k == 0) {
+            return Collections.emptyList();
+        }
         List<List<Integer>> result = new ArrayList<>();
-        backtrack(result, new ArrayList<>(), list, k, 0);
+        findCombinationsHelper(input, k, 0, new ArrayList<>(), result);
         return result;
+    }
+
+    private static void findCombinationsHelper(List<Integer> input, int k, int start, List<Integer> current, List<List<Integer>> result) {
+        if (current.size() == k) {
+            result.add(new ArrayList<>(current));
+            return;
+        }
+        for (int i = start; i < input.size(); i++) {
+            current.add(input.get(i));
+            findCombinationsHelper(input, k, i + 1, current, result);
+            current.remove(current.size() - 1);
+        }
     }
 
     private static void backtrack(List<List<Integer>> result, List<Integer> temp, List<Integer> list, int k, int start) {

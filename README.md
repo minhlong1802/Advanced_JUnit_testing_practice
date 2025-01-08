@@ -23,8 +23,6 @@ Sau đó, viết các bộ kiểm thử nâng cao bằng JUnit để kiểm tra 
 
 #### 1. **Chương trình Java:**
 ```java
-import java.util.*;
-
 public class AlgorithmUtils {
 
     // 1. Tìm số nguyên tố trong khoảng cho trước
@@ -38,7 +36,6 @@ public class AlgorithmUtils {
     }
 
     private static boolean isPrime(int num) {
-        if (num < 2) return false;
         for (int i = 2; i <= Math.sqrt(num); i++) {
             if (num % i == 0) return false;
         }
@@ -68,6 +65,9 @@ public class AlgorithmUtils {
     // 3. Dijkstra
     public static int[] dijkstra(int[][] graph, int source) {
         int n = graph.length;
+        if (source < 0 || source >= n) {
+            throw new IllegalArgumentException("Source index is out of bounds");
+        }
         int[] dist = new int[n];
         boolean[] visited = new boolean[n];
         Arrays.fill(dist, Integer.MAX_VALUE);
@@ -102,18 +102,40 @@ public class AlgorithmUtils {
 
     // 4. Kiểm tra chuỗi đối xứng
     public static boolean isPalindrome(String s) {
+        if (s == null) {
+            return false;
+        }
         int left = 0, right = s.length() - 1;
         while (left < right) {
-            if (s.charAt(left++) != s.charAt(right--)) return false;
+            if (s.charAt(left) != s.charAt(right)) {
+                return false;
+            }
+            left++;
+            right--;
         }
         return true;
     }
 
     // 5. Tìm tổ hợp k phần tử
-    public static List<List<Integer>> findCombinations(List<Integer> list, int k) {
+    public static List<List<Integer>> findCombinations(List<Integer> input, int k) {
+        if (k == 0) {
+            return Collections.emptyList();
+        }
         List<List<Integer>> result = new ArrayList<>();
-        backtrack(result, new ArrayList<>(), list, k, 0);
+        findCombinationsHelper(input, k, 0, new ArrayList<>(), result);
         return result;
+    }
+
+    private static void findCombinationsHelper(List<Integer> input, int k, int start, List<Integer> current, List<List<Integer>> result) {
+        if (current.size() == k) {
+            result.add(new ArrayList<>(current));
+            return;
+        }
+        for (int i = start; i < input.size(); i++) {
+            current.add(input.get(i));
+            findCombinationsHelper(input, k, i + 1, current, result);
+            current.remove(current.size() - 1);
+        }
     }
 
     private static void backtrack(List<List<Integer>> result, List<Integer> temp, List<Integer> list, int k, int start) {
@@ -135,29 +157,35 @@ public class AlgorithmUtils {
 #### 2. **Bộ kiểm thử JUnit nâng cao:**
 
 ```java
-import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
-
-import java.util.*;
-
 class AlgorithmUtilsTest {
 
     @Test
     void testFindPrimes() {
+        // Basic cases
         assertEquals(List.of(2, 3, 5, 7), AlgorithmUtils.findPrimes(0, 10));
-        assertEquals(List.of(101, 103, 107), AlgorithmUtils.findPrimes(100, 110));
+        assertEquals(List.of(101, 103, 107, 109), AlgorithmUtils.findPrimes(100, 110));
         assertEquals(Collections.emptyList(), AlgorithmUtils.findPrimes(-5, 1));
+
+        // Edge cases
+        assertEquals(List.of(), AlgorithmUtils.findPrimes(10, 2)); // Start > End
+        assertEquals(List.of(2), AlgorithmUtils.findPrimes(2, 2)); // Single prime range
     }
 
     @Test
     void testMergeSort() {
+        // Basic cases
         assertArrayEquals(new int[]{1, 2, 3, 4, 5}, AlgorithmUtils.mergeSort(new int[]{5, 3, 1, 4, 2}));
         assertArrayEquals(new int[]{}, AlgorithmUtils.mergeSort(new int[]{}));
         assertArrayEquals(new int[]{1}, AlgorithmUtils.mergeSort(new int[]{1}));
+
+        // Edge cases
+        assertArrayEquals(new int[]{-3, -2, -1, 0, 1, 2}, AlgorithmUtils.mergeSort(new int[]{0, -1, 2, -3, 1, -2}));
+        assertArrayEquals(new int[]{Integer.MIN_VALUE, 0, Integer.MAX_VALUE},
+                AlgorithmUtils.mergeSort(new int[]{Integer.MAX_VALUE, Integer.MIN_VALUE, 0}));
     }
 
     @Test
-    public void testDijkstraOnFullyConnectedGraph() {
+    void testDijkstraOnFullyConnectedGraph() {
         int[][] graph = {
                 {0, 10, 0, 30, 100},
                 {10, 0, 50, 0, 0},
@@ -168,49 +196,69 @@ class AlgorithmUtilsTest {
         assertArrayEquals(new int[]{0, 10, 50, 30, 60}, AlgorithmUtils.dijkstra(graph, 0));
     }
 
-    //Addition of test case for higher coverage
     @Test
-    public void testDijkstraOnDisconnectedGraph() {
-        int[][] graph2 = {
+    void testDijkstraOnDisconnectedGraph() {
+        int[][] graph = {
                 {0, 0, 0, 0, 0},
                 {0, 0, 50, 0, 0},
                 {0, 50, 0, 20, 10},
                 {0, 0, 20, 0, 60},
                 {0, 0, 10, 60, 0}
         };
-        assertArrayEquals(new int[]{0, Integer.MAX_VALUE, Integer.MAX_VALUE,
-                        Integer.MAX_VALUE, Integer.MAX_VALUE},
-                AlgorithmUtils.dijkstra(graph2, 0));
+        assertArrayEquals(new int[]{0, Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE},
+                AlgorithmUtils.dijkstra(graph, 0));
     }
 
     @Test
     void testDijkstraWithNegativeWeights() {
-        int[][] graph3 = {
+        int[][] graph = {
                 {0, 10, 0, 30, Integer.MAX_VALUE},
                 {10, 0, 50, 0, 0},
                 {0, 50, 0, 20, 10},
                 {30, 0, 20, 0, 60},
                 {Integer.MAX_VALUE, 0, 10, 60, 0}
         };
-        assertArrayEquals(new int[]{0, 10, 50, 30, 60},
-                AlgorithmUtils.dijkstra(graph3, 0));
+        assertArrayEquals(new int[]{0, 10, 50, 30, 60}, AlgorithmUtils.dijkstra(graph, 0));
+    }
+
+    @Test
+    void testDijkstraWithInvalidSource() {
+        int[][] graph = {
+                {0, 10, 0, 30, 100},
+                {10, 0, 50, 0, 0},
+                {0, 50, 0, 20, 10},
+                {30, 0, 20, 0, 60},
+                {100, 0, 10, 60, 0}
+        };
+        assertThrows(IllegalArgumentException.class, () -> AlgorithmUtils.dijkstra(graph, -1));
     }
 
     @Test
     void testIsPalindrome() {
+        // Basic cases
         assertTrue(AlgorithmUtils.isPalindrome("madam"));
         assertFalse(AlgorithmUtils.isPalindrome("hello"));
         assertTrue(AlgorithmUtils.isPalindrome("a"));
         assertTrue(AlgorithmUtils.isPalindrome(""));
+
+        // Edge cases
+        assertTrue(AlgorithmUtils.isPalindrome("A man a plan a canal Panama".replaceAll("\\s+", "").toLowerCase()));
+        assertFalse(AlgorithmUtils.isPalindrome(null));
     }
 
     @Test
     void testFindCombinations() {
+        // Basic cases
         List<List<Integer>> result = AlgorithmUtils.findCombinations(List.of(1, 2, 3, 4), 2);
         assertTrue(result.containsAll(List.of(
-            List.of(1, 2), List.of(1, 3), List.of(1, 4), 
-            List.of(2, 3), List.of(2, 4), List.of(3, 4))));
+                List.of(1, 2), List.of(1, 3), List.of(1, 4),
+                List.of(2, 3), List.of(2, 4), List.of(3, 4))));
         assertEquals(6, result.size());
+
+        // Edge cases
+        assertEquals(Collections.emptyList(), AlgorithmUtils.findCombinations(List.of(1, 2, 3), 0)); // k = 0
+        assertEquals(List.of(List.of(1, 2, 3)), AlgorithmUtils.findCombinations(List.of(1, 2, 3), 3)); // k = n
+        assertEquals(Collections.emptyList(), AlgorithmUtils.findCombinations(List.of(), 2)); // Empty input
     }
 }
 ```
@@ -230,7 +278,8 @@ class AlgorithmUtilsTest {
   
 ---
 ### 4. **Kết quả**
-![image](https://github.com/user-attachments/assets/1f9752c2-8c73-415d-926e-2c8907a35540)
+![image](https://github.com/user-attachments/assets/90abfee9-a140-402a-b763-428a34034042)
+
 
 Độ coverage
 

@@ -2,6 +2,7 @@ package com.example.AdvancedJUnitTest;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -32,6 +33,17 @@ class AlgorithmUtilsTest {
         assertArrayEquals(new int[]{-3, -2, -1, 0, 1, 2}, AlgorithmUtils.mergeSort(new int[]{0, -1, 2, -3, 1, -2}));
         assertArrayEquals(new int[]{Integer.MIN_VALUE, 0, Integer.MAX_VALUE},
                 AlgorithmUtils.mergeSort(new int[]{Integer.MAX_VALUE, Integer.MIN_VALUE, 0}));
+
+        // Performance testing
+        int[] largeArray = new int[1000000];
+        for (int i = 0; i < largeArray.length; i++) {
+            largeArray[i] = largeArray.length - i;
+        }
+        int[] sortedArray = new int[1000000];
+        for (int i = 0; i < sortedArray.length; i++) {
+            sortedArray[i] = i + 1;
+        }
+        assertArrayEquals(sortedArray, AlgorithmUtils.mergeSort(largeArray));
     }
 
     @Test
@@ -94,6 +106,13 @@ class AlgorithmUtilsTest {
         // Edge cases
         assertTrue(AlgorithmUtils.isPalindrome("A man a plan a canal Panama".replaceAll("\\s+", "").toLowerCase()));
         assertFalse(AlgorithmUtils.isPalindrome(null));
+
+        // Performance testing
+        StringBuilder largePalindrome = new StringBuilder();
+        for (int i = 0; i < 100000; i++) {
+            largePalindrome.append("a");
+        }
+        assertTrue(AlgorithmUtils.isPalindrome(largePalindrome.toString()));
     }
 
     @Test
@@ -109,6 +128,13 @@ class AlgorithmUtilsTest {
         assertEquals(Collections.emptyList(), AlgorithmUtils.findCombinations(List.of(1, 2, 3), 0)); // k = 0
         assertEquals(List.of(List.of(1, 2, 3)), AlgorithmUtils.findCombinations(List.of(1, 2, 3), 3)); // k = n
         assertEquals(Collections.emptyList(), AlgorithmUtils.findCombinations(List.of(), 2)); // Empty input
+
+        // Performance testing
+        List<Integer> largeInput = new ArrayList<>();
+        for (int i = 0; i < 20; i++) {
+            largeInput.add(i + 1);
+        }
+        assertEquals(190, AlgorithmUtils.findCombinations(largeInput, 2).size());
     }
 }
 
